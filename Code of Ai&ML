@@ -1,0 +1,271 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import struct
+
+#Level 1: Exploratory Data Analysis
+
+# Load the images file
+def load_images(file_path):
+    with open(file_path, 'rb') as f:
+        magic, num, rows, cols = struct.unpack('>IIII', f.read(16))
+        images = np.fromfile(f, dtype=np.uint8).reshape(num, rows, cols)
+    return images
+
+# Load the labels file
+def load_labels(file_path):
+    with open(file_path, 'rb') as f:
+        magic, num = struct.unpack('>II', f.read(8))
+        labels = np.fromfile(f, dtype=np.uint8)
+    return labels
+
+# File paths
+images_file = 'images-idx3-ubyte'
+labels_file = 'labels-idx1-ubyte'
+
+# Load data
+images = load_images(images_file)
+labels = load_labels(labels_file)
+
+print("Images shape:", images.shape)
+print("Labels shape:", labels.shape)
+
+def display_images(images, labels, num_images=5):
+    plt.figure(figsize=(10, 5))
+    for i in range(num_images):
+        plt.subplot(1, num_images, i + 1)
+        plt.imshow(images[i], cmap='gray')
+        plt.title(f"Label: {labels[i]}")
+        plt.axis('off')
+    plt.show()
+
+display_images(images, labels)
+
+print("Pixel values of first image:")
+print(images[0])
+
+
+import pandas as pd
+print("Images shape:", images.shape)
+print("Labels shape:", labels.shape)
+
+
+def display_sample_images(images, labels):
+    unique_labels = np.unique(labels)
+    plt.figure(figsize=(12, 6))
+    for i, label in enumerate(unique_labels):
+        idx = np.where(labels == label)[0][0]
+        plt.subplot(1, len(unique_labels), i + 1)
+        plt.imshow(images[idx], cmap='gray')
+        plt.title(f"Label: {label}")
+        plt.axis('off')
+    plt.show()
+
+display_sample_images(images, labels)
+
+pixel_values = images.reshape(-1)
+summary_stats = pd.Series(pixel_values).describe()
+print("\nSummary Statistics for Pixel Values:")
+print(summary_stats)
+
+
+plt.figure(figsize=(8, 6))
+plt.hist(pixel_values, bins=50, color='blue', alpha=0.7)
+plt.title("Pixel Value Distribution")
+plt.xlabel("Pixel Value")
+plt.ylabel("Frequency")
+plt.show()
+
+#Level 2: Basic Classification Model
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+import seaborn as sns
+import shap
+
+flattened_images = images.reshape(images.shape[0], -1)
+
+
+normalized_images = flattened_images / 255.0
+
+
+scaler = StandardScaler()
+standardized_images = scaler.fit_transform(normalized_images)
+
+
+X_train, X_test, y_train, y_test = train_test_split(standardized_images, labels, test_size=0.2, random_state=42)
+
+
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+
+conf_matrix = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(10, 8))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=np.unique(labels), yticklabels=np.unique(labels))
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted Labels")
+plt.ylabel("True Labels")
+plt.show()
+
+#Level 3: Neural Network Implementation
+
+pip install shap lime matplotlib seaborn
+
+import shap
+import lime
+import lime.lime_tabular
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
+
+num_samples = 1000
+num_features = 50
+X = np.random.rand(num_samples, num_features)
+y = np.random.randint(0, 2, num_samples)
+
+
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+
+explainer = shap.Explainer(model, X_train)
+shap_values = explainer(X_test)
+
+
+shap.summary_plot(shap_values, X_test)
+
+
+lime_explainer = lime.lime_tabular.LimeTabularExplainer(X_train, mode="classification")
+
+
+idx = 0
+exp = lime_explainer.explain_instance(X_test[idx], model.predict_proba)
+
+exp.show_in_notebook()
+exp.as_pyplot_figure()
+plt.show()
+
+
+import tensorflow as tf
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
+from sklearn.model_selection import train_test_split
+
+# Function to load images from IDX file
+def load_images(file_path):
+    with open(file_path, 'rb') as f:
+        magic, num, rows, cols = struct.unpack('>IIII', f.read(16))
+        images = np.fromfile(f, dtype=np.uint8).reshape(num, rows, cols)
+    return images
+
+# Function to load labels from IDX file
+def load_labels(file_path):
+    with open(file_path, 'rb') as f:
+        magic, num = struct.unpack('>II', f.read(8))
+        labels = np.fromfile(f, dtype=np.uint8)
+    return labels
+
+# File paths (Ensure these files exist in the current directory)
+images_file = 'images-idx3-ubyte'
+labels_file = 'labels-idx1-ubyte'
+
+# Load images and labels
+images = load_images(images_file)
+labels = load_labels(labels_file)
+
+# Print dataset shapes
+print(f"Loaded images shape: {images.shape}")
+print(f"Loaded labels shape: {labels.shape}")
+
+images = images / 255.0
+
+X_train, X_val, y_train, y_val = train_test_split(images, labels, test_size=0.2, random_state=42)
+
+print(f"Training set shape: {X_train.shape}, Labels: {y_train.shape}")
+print(f"Validation set shape: {X_val.shape}, Labels: {y_val.shape}")
+
+# Define the Neural Network model
+model = Sequential([
+    Flatten(input_shape=(28, 28)),
+    Dense(128, activation='relu'),
+    Dense(64, activation='relu'),
+    Dense(10, activation='softmax')
+])
+
+
+model.compile(optimizer=Adam(),
+              loss=SparseCategoricalCrossentropy(),
+              metrics=['accuracy'])
+
+
+model.summary()
+
+val_loss, val_accuracy = model.evaluate(X_val, y_val)
+print(f"Validation Accuracy: {val_accuracy * 100:.2f}%")
+
+plt.figure(figsize=(12, 5))
+
+
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.title('Accuracy over epochs')
+
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.title('Loss over epochs')
+
+plt.show()
+
+predictions = model.predict(X_val)
+
+predicted_labels = np.argmax(predictions, axis=1)
+
+class_names = ["T-shirt/Top", "Trouser", "Pullover", "Dress", "Coat",
+               "Sandal", "Shirt", "Sneaker", "Bag", "Ankle Boot"]
+
+
+plt.figure(figsize=(12, 6))
+for i in range(10):
+    plt.subplot(2, 5, i + 1)
+    plt.imshow(X_val[i], cmap='gray')
+    plt.title(f"Pred: {class_names[predicted_labels[i]]}")
+    plt.axis("off")
+plt.show()
