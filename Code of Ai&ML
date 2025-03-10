@@ -1,6 +1,24 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import struct
+import pandas as pd
+import seaborn as sns
+import shap
+import lime
+import lime.lime_tabular
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+pip install shap lime matplotlib 
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 #Level 1: Exploratory Data Analysis
 
@@ -44,7 +62,6 @@ print("Pixel values of first image:")
 print(images[0])
 
 
-import pandas as pd
 print("Images shape:", images.shape)
 print("Labels shape:", labels.shape)
 
@@ -67,7 +84,6 @@ summary_stats = pd.Series(pixel_values).describe()
 print("\nSummary Statistics for Pixel Values:")
 print(summary_stats)
 
-
 plt.figure(figsize=(8, 6))
 plt.hist(pixel_values, bins=50, color='blue', alpha=0.7)
 plt.title("Pixel Value Distribution")
@@ -77,29 +93,17 @@ plt.show()
 
 #Level 2: Basic Classification Model
 
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.preprocessing import StandardScaler
-import seaborn as sns
-import shap
-
 flattened_images = images.reshape(images.shape[0], -1)
 
-
 normalized_images = flattened_images / 255.0
-
 
 scaler = StandardScaler()
 standardized_images = scaler.fit_transform(normalized_images)
 
-
 X_train, X_test, y_train, y_test = train_test_split(standardized_images, labels, test_size=0.2, random_state=42)
-
 
 model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
-
 
 y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
@@ -117,19 +121,6 @@ plt.ylabel("True Labels")
 plt.show()
 
 #Level 3: Neural Network Implementation
-
-pip install shap lime matplotlib seaborn
-
-import shap
-import lime
-import lime.lime_tabular
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
 
 num_samples = 1000
 num_features = 50
@@ -170,15 +161,6 @@ exp = lime_explainer.explain_instance(X_test[idx], model.predict_proba)
 exp.show_in_notebook()
 exp.as_pyplot_figure()
 plt.show()
-
-
-import tensorflow as tf
-import matplotlib.pyplot as plt
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from sklearn.model_selection import train_test_split
 
 # Function to load images from IDX file
 def load_images(file_path):
@@ -221,11 +203,9 @@ model = Sequential([
     Dense(10, activation='softmax')
 ])
 
-
 model.compile(optimizer=Adam(),
               loss=SparseCategoricalCrossentropy(),
               metrics=['accuracy'])
-
 
 model.summary()
 
